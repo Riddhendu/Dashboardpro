@@ -1,10 +1,19 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-// MongoDB connection URI
-const mongoURI = 'mongodb://localhost:27017/user';
+    
+   const host = process.env.DATABASE_URL
 
-// Connect to MongoDB
-mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('Connected to MongoDB'))
-  .catch((err) => console.error('Error connecting to MongoDB:', err));
+const connectDatabase = () => {
+  mongoose
+    .connect(host, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    })
+    .then((data) => {
+      console.log(`Mongodb connected with server: ${host}`);
+    }).catch((err) => {
+        console.error('Error connecting to MongoDB:', err);
+      });
+};
 
+module.exports = connectDatabase;

@@ -1,24 +1,27 @@
 const jwt = require('jsonwebtoken');
+const UserMongo = require('../Models/UserMongo');
 
-// Middleware to verify JWT token
-function authenticateUser(req, res, next) {
-  // Get the token from the request headers, query parameters, or body
+const authenticateUser = async (req, res, next) => {
   const token = req.headers.authorization || req.query.token || req.body.token;
 
   if (!token) {
     return res.status(401).json({ error: 'Unauthorized: Token not provided' });
   }
 
-  // Verify the token
-  jwt.verify(token, 'your_secret_key', (err, decoded) => {
-    if (err) {
-      return res.status(401).json({ error: 'Unauthorized: Invalid token' });
+  try {
+    const decodedData = jwt.verify(token, process.env.SECRET_KEY);
+    console.log('decodedData',decodedData)
+    req.user = await UserMongo.findById(decodedData.userId); // Assuming 'userId' is the user identifier in the database
+    req.pgUserId = decodedData.pgUserId
+    // console.log('req.user',req.user)
+    if (!req.user) {
+      return res.status(401).json({ error: 'Unauthorized: User not found' });
     }
-    
-    // If the token is valid, set the user ID in the request for further processing
-    req.userId = decoded.userId;
-    next(); // Call next middleware or proceed to the route handler
-  });
-}
+
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: 'Unauthorized: Invalid token' });
+  }
+};
 
 module.exports = authenticateUser;
